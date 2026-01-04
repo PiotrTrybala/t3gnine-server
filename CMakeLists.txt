@@ -9,11 +9,11 @@ find_package(Boost REQUIRED COMPONENTS system)
 
 include_directories(SYSTEM 
     "vendor/glad/include"
-    "../lib/tengine/include"
+    "../tengine/include"
     ${Boost_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp core/gameServer.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ../lib/tengine/include)
 
@@ -22,6 +22,7 @@ target_link_libraries(${PROJECT_NAME}
         BulletDynamics
         BulletCollision
         LinearMath
+        Boost::boost
         Boost::system
 )
 

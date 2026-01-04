@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/usr/include/bullet",
-                "../lib/tengine/include"
+                "../tengine/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

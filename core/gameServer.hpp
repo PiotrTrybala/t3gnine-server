@@ -2,17 +2,34 @@
 
 #include <iostream>
 #include <cstdint>
+#include <map>
 #include <asio.hpp>
 
-#include "../lib/tengine/include/packetBuffer.hpp"
+#include "packetBuffer.hpp"
 
-namespace tag::server
+using asio::ip::udp;
+
+class GameServer
 {
-    class GameServer
-    {
-    public:
-        GameServer();
-        ~GameServer();
-    private:
-    };
-}
+public:
+    GameServer(uint16_t port);
+    ~GameServer();
+
+private:
+    void StartReceive();
+    void HandleReceive(std::size_t length);
+
+    asio::io_context ioContext;
+    udp::socket socket;
+    udp::endpoint remoteEndpoint;
+    uint8_t recvBuffer[2048];
+
+    std::thread serverThread;
+
+    // std::map<uint32_t, udp::endpoint> clients;
+
+    // bool running = false;
+    // uint32_t nextId = 1;
+
+    // const double tickRate = 1.0 / 60.0;
+};
