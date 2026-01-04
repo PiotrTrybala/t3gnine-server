@@ -4,7 +4,7 @@
 #include <map>
 #include <deque>
 
-#include "packetBuffer.hpp"
+#include "../../tengine/include/packetBuffer.hpp"
 #include <btBulletDynamicsCommon.h>
 
 struct RemoteClient {
