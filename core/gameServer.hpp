@@ -15,11 +15,14 @@ public:
     GameServer(uint16_t port);
     ~GameServer();
 
+    void Run();
+
 private:
     void StartReceive();
     void HandleReceive(std::size_t length);
 
     asio::io_context ioContext;
+    asio::executor_work_guard<asio::io_context::executor_type> workGuard;
     udp::socket socket;
     udp::endpoint remoteEndpoint;
     uint8_t recvBuffer[2048];
