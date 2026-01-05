@@ -20,8 +20,10 @@ public:
 
     void Run();
 
-    void Broadcast(const Packet& packet);
-    void SendTo(const Packet& packet, const Client& client);
+    void Broadcast(const Packet& packet);   
+
+    void Send(const Packet& packet, const udp::endpoint& endpoint);
+    void SendClient(const Packet& packet, const Client& client);
 
 private:
     void StartReceive();
