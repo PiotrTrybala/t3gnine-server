@@ -25,6 +25,13 @@ void GameServer::Run()
             std::cout << "Network thread stopped." << std::endl; });
 }
 
+void GameServer::Broadcast(const Packet &packet)
+{
+}
+void GameServer::SendTo(const Packet &packet, const Client &client)
+{
+}
+
 void GameServer::StartReceive()
 {
     socket.async_receive_from(
@@ -35,7 +42,7 @@ void GameServer::StartReceive()
 
                 std::cout << "Received buffer: " << recvBuffer << std::endl;
         
-                PacketBuffer packet;
+                Packet packet;
                 packet.data.assign(recvBuffer, recvBuffer + bytesReceived);
 
                 std::string message; int value;
@@ -44,17 +51,26 @@ void GameServer::StartReceive()
 
                 std::cout << "Got from client: " << message << " " << value << std::endl;    
 
-                HandleReceive(bytesReceived);
+                HandleReceive(packet);
             }
             StartReceive(); });
 }
-void GameServer::HandleReceive(std::size_t length)
+void GameServer::HandleReceive(Packet &packet)
 {
-    PacketBuffer packet;
-    packet.WriteString("Hello from server");
-    packet.Write(10);
+    PacketType packetType;
+    if (!packet.Read(packetType))
+    {
+        std::cout << "Could not read packet type" << std::endl;
+        return;
+    }
 
-    socket.async_send_to(asio::buffer(packet.data), remoteEndpoint, [packet](const asio::error_code &ec, std::size_t length) {
+    switch (packetType)
+    {
+    case PacketType::CONNECT:
+        break;
+    case PacketType::PING:
+        break;
+    }
 
-    });
+    socket.async_send_to(asio::buffer(packet.data), remoteEndpoint, [packet](const asio::error_code &ec, std::size_t length) {});
 }

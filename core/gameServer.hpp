@@ -5,9 +5,12 @@
 #include <map>
 #include <asio.hpp>
 
-#include "packetBuffer.hpp"
+#include "packet.hpp"
+#include "network.hpp"
+#include "client.hpp"
 
 using asio::ip::udp;
+using namespace tag::lib::network;
 
 class GameServer
 {
@@ -17,9 +20,12 @@ public:
 
     void Run();
 
+    void Broadcast(const Packet& packet);
+    void SendTo(const Packet& packet, const Client& client);
+
 private:
     void StartReceive();
-    void HandleReceive(std::size_t length);
+    void HandleReceive(Packet& packet);
 
     asio::io_context ioContext;
     asio::executor_work_guard<asio::io_context::executor_type> workGuard;
@@ -29,10 +35,10 @@ private:
 
     std::thread serverThread;
 
-    // std::map<uint32_t, udp::endpoint> clients;
+    std::map<uint32_t, Client> clients;
 
-    // bool running = false;
-    // uint32_t nextId = 1;
+    bool running = false;
+    uint32_t nextId = 1;
 
-    // const double tickRate = 1.0 / 60.0;
+    const double tickRate = 1.0 / 60.0;
 };
