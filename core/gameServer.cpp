@@ -66,23 +66,10 @@ void GameServer::HandleReceive(Packet &packet)
 
     switch (packetType)
     {
-    case PacketType::CONNECT:
-
-        nextId++;
-        response.Write(PacketType::CONNECT_ACK);
-        response.Write(nextId);
-
-        break;
     case PacketType::PING:
         std::cout << "Got PING packet type" << std::endl;
         response.Write(PacketType::PING);
         response.WriteString("Hello from server! :)");
-
-        // std::cout << "Writing response (" << response.data.size() << " bytes): ";
-        // for (auto c : response.data) {
-        //     std::cout << (char) c;
-        // }
-        // std::cout << std::endl;
 
         
         break;
