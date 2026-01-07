@@ -2,6 +2,7 @@
 
 GameServer::GameServer(uint16_t port) : workGuard(asio::make_work_guard(ioContext)), socket(ioContext, udp::endpoint(udp::v4(), port)), running(false)
 {
+    InitPhysics();
 }
 GameServer::~GameServer()
 {
@@ -44,27 +45,28 @@ void GameServer::Tick()
 
     serverTickCount++;
 
-    if (serverTickCount % 3 == 0) {
+    // dynamicsWorld->stepSimulation(1.0 / 60.0f, 1, 1.0 / 60.0f);
 
-        Packet snapshot;
-        snapshot.Write(PacketType::SNAPSHOT);
-        snapshot.Write((uint32_t) clients.size());
+    // for (auto& [id, client] : clients) {
 
-        for (auto const& [id, client] : clients) {
+    // }
+    // if (serverTickCount % 3 == 0)
+    // {
 
-            snapshot.Write(client.id);
-            snapshot.Write(client.state.position);
-            snapshot.Write(client.state.lastProcessedInput);
+    //     Packet snapshot;
+    //     snapshot.Write(PacketType::SNAPSHOT);
+    //     snapshot.Write((uint32_t)clients.size());
 
-        }
+    //     for (auto const &[id, client] : clients)
+    //     {
 
-        Broadcast(snapshot);
-    }
+    //         snapshot.Write(client.id);
+    //         snapshot.Write(client.state.position);
+    //         snapshot.Write(client.state.lastProcessedInput);
+    //     }
 
-
-
-
-
+    //     Broadcast(snapshot);
+    // }
 }
 void GameServer::Broadcast(const Packet &packet)
 {
@@ -72,6 +74,21 @@ void GameServer::Broadcast(const Packet &packet)
     {
         Send(client.endpoint, packet);
     }
+}
+
+void GameServer::InitPhysics()
+{
+    collisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
+    dispatcher = std::make_unique<btCollisionDispatcher>(collisionConfiguration.get());
+    overlappingPairCache = std::make_unique<btDbvtBroadphase>();
+    solver = std::make_unique<btSequentialImpulseConstraintSolver>();
+
+    dynamicsWorld = std::make_unique<btDiscreteDynamicsWorld>(
+        dispatcher.get(), overlappingPairCache.get(), solver.get(), collisionConfiguration.get());
+
+    dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
+
+    dynamicsWorld->getPairCache()->setInternalGhostPairCallback(&ghostPairCallback);
 }
 
 void GameServer::Send(const udp::endpoint &endpoint, const Packet &packet)

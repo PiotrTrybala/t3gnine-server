@@ -48,7 +48,6 @@ private:
     void StartReceive();
     void HandleReceive(Packet &packet);
     void InitPhysics();
-    void UpdatePhysics(float deltaTime);
 
     asio::io_context ioContext;
     asio::executor_work_guard<asio::io_context::executor_type> workGuard;
