@@ -8,15 +8,15 @@
 
 #include <asio.hpp>
 
-#include <btBulletDynamicsCommon.h>
-#include <BulletDynamics/Character/btKinematicCharacterController.h>
-#include <BulletCollision/CollisionDispatch/btGhostObject.h>
+// #include <btBulletDynamicsCommon.h>
+// #include <BulletDynamics/Character/btKinematicCharacterController.h>
+// #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
 #include "packet.hpp"
 #include "network.hpp"
 
 using asio::ip::udp;
-using namespace tag::lib::network;
+using namespace tag::network;
 
 struct PlayerState
 {
@@ -27,9 +27,8 @@ struct PlayerState
 
 struct RemoteClient
 {
-    udp::endpoint endpoint;
     uint32_t id;
-    PlayerState state;
+    udp::endpoint endpoint;
 };
 
 class GameServer
@@ -46,7 +45,7 @@ public:
 
 private:
     void StartReceive();
-    void HandleReceive(Packet &packet);
+    void HandleReceive(Packet &packet, udp::endpoint& endpoint);
     void InitPhysics();
 
     asio::io_context ioContext;
@@ -58,19 +57,20 @@ private:
     std::thread serverThread;
     std::mutex clientsMutex;
     std::unordered_map<uint32_t, RemoteClient> clients;
+    std::unordered_map<uint32_t, PlayerState> states;
     uint32_t serverTickCount = 0;
 
     bool running = false;
     uint32_t nextClientId = 1;
 
-    std::unique_ptr<btDefaultCollisionConfiguration> collisionConfiguration;
-    std::unique_ptr<btCollisionDispatcher> dispatcher;
-    std::unique_ptr<btBroadphaseInterface> overlappingPairCache;
-    std::unique_ptr<btSequentialImpulseConstraintSolver> solver;
-    std::unique_ptr<btDiscreteDynamicsWorld> dynamicsWorld;
+    // std::unique_ptr<btDefaultCollisionConfiguration> collisionConfiguration;
+    // std::unique_ptr<btCollisionDispatcher> dispatcher;
+    // std::unique_ptr<btBroadphaseInterface> overlappingPairCache;
+    // std::unique_ptr<btSequentialImpulseConstraintSolver> solver;
+    // std::unique_ptr<btDiscreteDynamicsWorld> dynamicsWorld;
 
-    // Physics Helpers
-    btGhostPairCallback ghostPairCallback;
+    // // Physics Helpers
+    // btGhostPairCallback ghostPairCallback;
 
     const double tickRate = 1.0 / 60.0;
 };

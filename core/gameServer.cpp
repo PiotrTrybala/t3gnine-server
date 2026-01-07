@@ -12,6 +12,10 @@ GameServer::~GameServer()
 
 void GameServer::Run()
 {
+
+    std::ios_base::sync_with_stdio(false);
+    std::cout << std::unitbuf;
+
     running = true;
     StartReceive();
 
@@ -38,7 +42,7 @@ void GameServer::Run()
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
+    } 
 }
 void GameServer::Tick()
 {
@@ -78,23 +82,23 @@ void GameServer::Broadcast(const Packet &packet)
 
 void GameServer::InitPhysics()
 {
-    collisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
-    dispatcher = std::make_unique<btCollisionDispatcher>(collisionConfiguration.get());
-    overlappingPairCache = std::make_unique<btDbvtBroadphase>();
-    solver = std::make_unique<btSequentialImpulseConstraintSolver>();
+    // collisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
+    // dispatcher = std::make_unique<btCollisionDispatcher>(collisionConfiguration.get());
+    // overlappingPairCache = std::make_unique<btDbvtBroadphase>();
+    // solver = std::make_unique<btSequentialImpulseConstraintSolver>();
 
-    dynamicsWorld = std::make_unique<btDiscreteDynamicsWorld>(
-        dispatcher.get(), overlappingPairCache.get(), solver.get(), collisionConfiguration.get());
+    // dynamicsWorld = std::make_unique<btDiscreteDynamicsWorld>(
+    //     dispatcher.get(), overlappingPairCache.get(), solver.get(), collisionConfiguration.get());
 
-    dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
+    // dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
 
-    dynamicsWorld->getPairCache()->setInternalGhostPairCallback(&ghostPairCallback);
+    // dynamicsWorld->getPairCache()->setInternalGhostPairCallback(&ghostPairCallback);
 }
 
 void GameServer::Send(const udp::endpoint &endpoint, const Packet &packet)
 {
     auto data = std::make_shared<std::vector<uint8_t>>(packet.data);
-    socket.async_send_to(asio::buffer(*data), remoteEndpoint, [data](const std::error_code &ec, std::size_t bytesSent) {});
+    socket.async_send_to(asio::buffer(*data), endpoint, [data](const std::error_code &ec, std::size_t bytesSent) {});
 }
 
 void GameServer::StartReceive()
@@ -104,13 +108,16 @@ void GameServer::StartReceive()
         if (!ec && bytesReceived > 0) {
             Packet packet;
             packet.data.assign(recvBuffer, recvBuffer + bytesReceived);
-            HandleReceive(packet);
+
+            udp::endpoint sender = remoteEndpoint;
+
+            HandleReceive(packet, sender);
         }
         if (running) {
             StartReceive();
         } });
 }
-void GameServer::HandleReceive(Packet &packet)
+void GameServer::HandleReceive(Packet &packet, udp::endpoint &endpoint)
 {
     PacketType packetType;
     if (!packet.Read(packetType))
@@ -118,6 +125,36 @@ void GameServer::HandleReceive(Packet &packet)
 
     switch (packetType)
     {
+    case PacketType::LOGIN:
+    {
+        Packet response;
+        for (auto &[id, client] : clients)
+        {
+            if (client.endpoint == endpoint)
+            {
+                std::cout << "Client already registered, Id = " << id << std::endl;
+                response.Write(PacketType::LOGIN_ACK);
+                response.Write(id);
+                Send(client.endpoint, response);
+                return;
+            }
+        }
+
+        uint32_t currentClientId = nextClientId++;
+
+        std::lock_guard<std::mutex> lock(clientsMutex);
+        clients[currentClientId] = {
+            .id = currentClientId,
+            .endpoint = endpoint,
+        };
+
+        std::cout << "Registered new client, Id = " << currentClientId << std::endl;
+        response.Write(PacketType::LOGIN_ACK);
+        response.Write(currentClientId);
+        Send(endpoint, response);
+
+        break;
+    }
     case PacketType::PING:
     {
         Packet response;
