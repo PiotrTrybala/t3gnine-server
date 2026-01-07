@@ -1,78 +1,89 @@
 #include "gameServer.hpp"
 
-GameServer::GameServer(uint16_t port) : workGuard(asio::make_work_guard(ioContext)), socket(ioContext, udp::endpoint(udp::v4(), port))
+GameServer::GameServer(uint16_t port) : workGuard(asio::make_work_guard(ioContext)), socket(ioContext, udp::endpoint(udp::v4(), port)), running(false)
 {
 }
 GameServer::~GameServer()
 {
+    running = false;
     ioContext.stop();
-    if (serverThread.joinable())
-    {
-        serverThread.join();
-    }
 }
 
 void GameServer::Run()
 {
+    running = true;
     StartReceive();
-    serverThread = std::thread([this]
-                               { std::cout << "Network thread started..." << std::endl;
-            try {
-                ioContext.run();
-            } catch (const std::exception& e) {
-                std::cerr << "Network thread error: " << e.what() << std::endl;
-            }
-            std::cout << "Network thread stopped." << std::endl; });
-}
 
+    using tickRate = std::chrono::duration<uint32_t, std::ratio<1, 60>>;
+
+    auto nextTick = std::chrono::high_resolution_clock::now();
+
+    std::cout << "Server started at tickrate: 60 ticks per second" << std::endl;
+
+    while (running)
+    {
+        ioContext.poll();
+
+        if (ioContext.stopped())
+        {
+            ioContext.restart();
+        }
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        while (currentTime >= nextTick)
+        {
+            Tick();
+            nextTick += std::chrono::nanoseconds(1000000000 / 60);
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+}
+void GameServer::Tick()
+{
+}
 void GameServer::Broadcast(const Packet &packet)
 {
+    for (auto const &[id, client] : clients)
+    {
+        Send(client.endpoint, packet);
+    }
 }
 
-void GameServer::Send(const Packet &packet, const udp::endpoint &endpoint)
+void GameServer::Send(const udp::endpoint &endpoint, const Packet &packet)
 {
-    socket.async_send_to(asio::buffer(packet.data), endpoint, [this](const std::error_code& ec, std::size_t length) {
-        std::cout << "Send packet with length of " << length << " bytes" << std::endl;
-    });
-}
-
-void GameServer::SendClient(const Packet &packet, const Client &client)
-{
+    auto data = std::make_shared<std::vector<uint8_t>>(packet.data);
+    socket.async_send_to(asio::buffer(*data), remoteEndpoint, [data](const std::error_code &ec, std::size_t bytesSent) {});
 }
 
 void GameServer::StartReceive()
 {
-    socket.async_receive_from(
-        asio::buffer(recvBuffer), remoteEndpoint, [this](const asio::error_code &ec, std::size_t bytesReceived)
-        {
-            std::cout << "Got packet from: " << remoteEndpoint.address().to_string() << ":" << remoteEndpoint.port() << std::endl;
-            if (!ec && bytesReceived > 0) {
-                Packet packet;
-                packet.data.assign(recvBuffer, recvBuffer + bytesReceived);
-
-                HandleReceive(packet);
-            }
-            StartReceive(); });
+    socket.async_receive_from(asio::buffer(recvBuffer), remoteEndpoint, [this](const asio::error_code &ec, std::size_t bytesReceived)
+                              {
+        if (!ec && bytesReceived > 0) {
+            Packet packet;
+            packet.data.assign(recvBuffer, recvBuffer + bytesReceived);
+            HandleReceive(packet);
+        }
+        if (running) {
+            StartReceive();
+        } });
 }
 void GameServer::HandleReceive(Packet &packet)
 {
     PacketType packetType;
     if (!packet.Read(packetType))
-    {
-        std::cout << "Could not read packet type" << std::endl;
         return;
-    }
-    Packet response;
 
     switch (packetType)
     {
     case PacketType::PING:
-        std::cout << "Got PING packet type" << std::endl;
+    {
+        Packet response;
         response.Write(PacketType::PING);
-        response.WriteString("Hello from server! :)");
-
-        
+        response.WriteString("Hello from server!");
+        Send(remoteEndpoint, response);
         break;
     }
-    Send(response, remoteEndpoint);
+    }
 }
