@@ -41,6 +41,30 @@ void GameServer::Run()
 }
 void GameServer::Tick()
 {
+
+    serverTickCount++;
+
+    if (serverTickCount % 3 == 0) {
+
+        Packet snapshot;
+        snapshot.Write(PacketType::SNAPSHOT);
+        snapshot.Write((uint32_t) clients.size());
+
+        for (auto const& [id, client] : clients) {
+
+            snapshot.Write(client.id);
+            snapshot.Write(client.state.position);
+            snapshot.Write(client.state.lastProcessedInput);
+
+        }
+
+        Broadcast(snapshot);
+    }
+
+
+
+
+
 }
 void GameServer::Broadcast(const Packet &packet)
 {
