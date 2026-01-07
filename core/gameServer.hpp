@@ -37,7 +37,7 @@ private:
 
     std::thread serverThread;
 
-    std::map<uint32_t, Client> clients;
+    std::map<udp::endpoint, Client> clients;
 
     bool running = false;
     uint32_t nextId = 1;
