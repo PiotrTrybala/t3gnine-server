@@ -1,167 +1,167 @@
-#include "gameServer.hpp"
+// #include "gameServer.hpp"
 
-GameServer::GameServer(uint16_t port) : workGuard(asio::make_work_guard(ioContext)), socket(ioContext, udp::endpoint(udp::v4(), port)), running(false)
-{
-    InitPhysics();
-}
-GameServer::~GameServer()
-{
-    running = false;
-    ioContext.stop();
-}
+// GameServer::GameServer(uint16_t port) : workGuard(asio::make_work_guard(ioContext)), socket(ioContext, udp::endpoint(udp::v4(), port)), running(false)
+// {
+//     InitPhysics();
+// }
+// GameServer::~GameServer()
+// {
+//     running = false;
+//     ioContext.stop();
+// }
 
-void GameServer::Run()
-{
+// void GameServer::Run()
+// {
 
-    std::ios_base::sync_with_stdio(false);
-    std::cout << std::unitbuf;
+//     std::ios_base::sync_with_stdio(false);
+//     std::cout << std::unitbuf;
 
-    running = true;
-    StartReceive();
+//     running = true;
+//     StartReceive();
 
-    using tickRate = std::chrono::duration<uint32_t, std::ratio<1, 60>>;
+//     using tickRate = std::chrono::duration<uint32_t, std::ratio<1, 60>>;
 
-    auto nextTick = std::chrono::high_resolution_clock::now();
+//     auto nextTick = std::chrono::high_resolution_clock::now();
 
-    std::cout << "Server started at tickrate: 60 ticks per second" << std::endl;
+//     std::cout << "Server started at tickrate: 60 ticks per second" << std::endl;
 
-    while (running)
-    {
-        ioContext.poll();
+//     while (running)
+//     {
+//         ioContext.poll();
 
-        if (ioContext.stopped())
-        {
-            ioContext.restart();
-        }
+//         if (ioContext.stopped())
+//         {
+//             ioContext.restart();
+//         }
 
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        while (currentTime >= nextTick)
-        {
-            Tick();
-            nextTick += std::chrono::nanoseconds(1000000000 / 60);
-        }
+//         auto currentTime = std::chrono::high_resolution_clock::now();
+//         while (currentTime >= nextTick)
+//         {
+//             Tick();
+//             nextTick += std::chrono::nanoseconds(1000000000 / 60);
+//         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    } 
-}
-void GameServer::Tick()
-{
+//         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+//     } 
+// }
+// void GameServer::Tick()
+// {
 
-    serverTickCount++;
+//     serverTickCount++;
 
-    // dynamicsWorld->stepSimulation(1.0 / 60.0f, 1, 1.0 / 60.0f);
+//     // dynamicsWorld->stepSimulation(1.0 / 60.0f, 1, 1.0 / 60.0f);
 
-    // for (auto& [id, client] : clients) {
+//     // for (auto& [id, client] : clients) {
 
-    // }
-    // if (serverTickCount % 3 == 0)
-    // {
+//     // }
+//     // if (serverTickCount % 3 == 0)
+//     // {
 
-    //     Packet snapshot;
-    //     snapshot.Write(PacketType::SNAPSHOT);
-    //     snapshot.Write((uint32_t)clients.size());
+//     //     Packet snapshot;
+//     //     snapshot.Write(PacketType::SNAPSHOT);
+//     //     snapshot.Write((uint32_t)clients.size());
 
-    //     for (auto const &[id, client] : clients)
-    //     {
+//     //     for (auto const &[id, client] : clients)
+//     //     {
 
-    //         snapshot.Write(client.id);
-    //         snapshot.Write(client.state.position);
-    //         snapshot.Write(client.state.lastProcessedInput);
-    //     }
+//     //         snapshot.Write(client.id);
+//     //         snapshot.Write(client.state.position);
+//     //         snapshot.Write(client.state.lastProcessedInput);
+//     //     }
 
-    //     Broadcast(snapshot);
-    // }
-}
-void GameServer::Broadcast(const Packet &packet)
-{
-    for (auto const &[id, client] : clients)
-    {
-        Send(client.endpoint, packet);
-    }
-}
+//     //     Broadcast(snapshot);
+//     // }
+// }
+// void GameServer::Broadcast(const Packet &packet)
+// {
+//     for (auto const &[id, client] : clients)
+//     {
+//         Send(client.endpoint, packet);
+//     }
+// }
 
-void GameServer::InitPhysics()
-{
-    // collisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
-    // dispatcher = std::make_unique<btCollisionDispatcher>(collisionConfiguration.get());
-    // overlappingPairCache = std::make_unique<btDbvtBroadphase>();
-    // solver = std::make_unique<btSequentialImpulseConstraintSolver>();
+// void GameServer::InitPhysics()
+// {
+//     // collisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
+//     // dispatcher = std::make_unique<btCollisionDispatcher>(collisionConfiguration.get());
+//     // overlappingPairCache = std::make_unique<btDbvtBroadphase>();
+//     // solver = std::make_unique<btSequentialImpulseConstraintSolver>();
 
-    // dynamicsWorld = std::make_unique<btDiscreteDynamicsWorld>(
-    //     dispatcher.get(), overlappingPairCache.get(), solver.get(), collisionConfiguration.get());
+//     // dynamicsWorld = std::make_unique<btDiscreteDynamicsWorld>(
+//     //     dispatcher.get(), overlappingPairCache.get(), solver.get(), collisionConfiguration.get());
 
-    // dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
+//     // dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
 
-    // dynamicsWorld->getPairCache()->setInternalGhostPairCallback(&ghostPairCallback);
-}
+//     // dynamicsWorld->getPairCache()->setInternalGhostPairCallback(&ghostPairCallback);
+// }
 
-void GameServer::Send(const udp::endpoint &endpoint, const Packet &packet)
-{
-    auto data = std::make_shared<std::vector<uint8_t>>(packet.data);
-    socket.async_send_to(asio::buffer(*data), endpoint, [data](const std::error_code &ec, std::size_t bytesSent) {});
-}
+// void GameServer::Send(const udp::endpoint &endpoint, const Packet &packet)
+// {
+//     auto data = std::make_shared<std::vector<uint8_t>>(packet.data);
+//     socket.async_send_to(asio::buffer(*data), endpoint, [data](const std::error_code &ec, std::size_t bytesSent) {});
+// }
 
-void GameServer::StartReceive()
-{
-    socket.async_receive_from(asio::buffer(recvBuffer), remoteEndpoint, [this](const asio::error_code &ec, std::size_t bytesReceived)
-                              {
-        if (!ec && bytesReceived > 0) {
-            Packet packet;
-            packet.data.assign(recvBuffer, recvBuffer + bytesReceived);
+// void GameServer::StartReceive()
+// {
+//     socket.async_receive_from(asio::buffer(recvBuffer), remoteEndpoint, [this](const asio::error_code &ec, std::size_t bytesReceived)
+//                               {
+//         if (!ec && bytesReceived > 0) {
+//             Packet packet;
+//             packet.data.assign(recvBuffer, recvBuffer + bytesReceived);
 
-            udp::endpoint sender = remoteEndpoint;
+//             udp::endpoint sender = remoteEndpoint;
 
-            HandleReceive(packet, sender);
-        }
-        if (running) {
-            StartReceive();
-        } });
-}
-void GameServer::HandleReceive(Packet &packet, udp::endpoint &endpoint)
-{
-    PacketType packetType;
-    if (!packet.Read(packetType))
-        return;
+//             HandleReceive(packet, sender);
+//         }
+//         if (running) {
+//             StartReceive();
+//         } });
+// }
+// void GameServer::HandleReceive(Packet &packet, udp::endpoint &endpoint)
+// {
+//     PacketType packetType;
+//     if (!packet.Read(packetType))
+//         return;
 
-    switch (packetType)
-    {
-    case PacketType::LOGIN:
-    {
-        Packet response;
-        for (auto &[id, client] : clients)
-        {
-            if (client.endpoint == endpoint)
-            {
-                std::cout << "Client already registered, Id = " << id << std::endl;
-                response.Write(PacketType::LOGIN_ACK);
-                response.Write(id);
-                Send(client.endpoint, response);
-                return;
-            }
-        }
+//     switch (packetType)
+//     {
+//     case PacketType::LOGIN:
+//     {
+//         Packet response;
+//         for (auto &[id, client] : clients)
+//         {
+//             if (client.endpoint == endpoint)
+//             {
+//                 std::cout << "Client already registered, Id = " << id << std::endl;
+//                 response.Write(PacketType::LOGIN_ACK);
+//                 response.Write(id);
+//                 Send(client.endpoint, response);
+//                 return;
+//             }
+//         }
 
-        uint32_t currentClientId = nextClientId++;
+//         uint32_t currentClientId = nextClientId++;
 
-        std::lock_guard<std::mutex> lock(clientsMutex);
-        clients[currentClientId] = {
-            .id = currentClientId,
-            .endpoint = endpoint,
-        };
+//         std::lock_guard<std::mutex> lock(clientsMutex);
+//         clients[currentClientId] = {
+//             .id = currentClientId,
+//             .endpoint = endpoint,
+//         };
 
-        std::cout << "Registered new client, Id = " << currentClientId << std::endl;
-        response.Write(PacketType::LOGIN_ACK);
-        response.Write(currentClientId);
-        Send(endpoint, response);
+//         std::cout << "Registered new client, Id = " << currentClientId << std::endl;
+//         response.Write(PacketType::LOGIN_ACK);
+//         response.Write(currentClientId);
+//         Send(endpoint, response);
 
-        break;
-    }
-    case PacketType::PING:
-    {
-        Packet response;
-        response.Write(PacketType::PING);
-        response.WriteString("Hello from server!");
-        Send(remoteEndpoint, response);
-        break;
-    }
-    }
-}
+//         break;
+//     }
+//     case PacketType::PING:
+//     {
+//         Packet response;
+//         response.Write(PacketType::PING);
+//         response.WriteString("Hello from server!");
+//         Send(remoteEndpoint, response);
+//         break;
+//     }
+//     }
+// }

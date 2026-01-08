@@ -1,35 +1,16 @@
 #pragma once
 
-#include <iostream>
-#include <cstdint>
-#include <map>
+#include <unordered_map>
+#include <memory>
 #include <thread>
-#include <chrono>
-
+#include <atomic>
+#include <cstdint>
 #include <asio.hpp>
 
-// #include <btBulletDynamicsCommon.h>
-// #include <BulletDynamics/Character/btKinematicCharacterController.h>
-// #include <BulletCollision/CollisionDispatch/btGhostObject.h>
-
-#include "packet.hpp"
 #include "network.hpp"
-
-using asio::ip::udp;
-using namespace tag::network;
-
-struct PlayerState
-{
-    uint32_t id;
-    glm::vec3 position;
-    uint32_t lastProcessedInput; // For reconciliation
-};
-
-struct RemoteClient
-{
-    uint32_t id;
-    udp::endpoint endpoint;
-};
+#include "packet.hpp"
+#include "serverPlayer.hpp"
+#include "gameScene.hpp"
 
 class GameServer
 {
@@ -37,40 +18,31 @@ public:
     GameServer(uint16_t port);
     ~GameServer();
 
-    void Run();
-    void Tick();
-    void Broadcast(const Packet &packet);
-
-    void Send(const udp::endpoint &endpoint, const Packet &packet);
+    void Start();
+    void Stop();
 
 private:
-    void StartReceive();
-    void HandleReceive(Packet &packet, udp::endpoint& endpoint);
-    void InitPhysics();
+    void handleReceive();
+    void handlePhysics();
+    void boradcastSnapshots();
+
+    void handlePacket(const tag::network::Packet &packet, const asio::ip::udp::endpoint &endpoint);
+    void handleInputPacket(const tag::network::Packet &packet, uint32_t playerId);
+    void sendPacket(const tag::network::Packet &packet, const asio::ip::udp::endpoint &endpoint);
+
+    uint32_t createPlayer(const asio::ip::udp::endpoint &endpoint);
+    void remotePlayer(uint32_t id);
 
     asio::io_context ioContext;
-    asio::executor_work_guard<asio::io_context::executor_type> workGuard;
-    udp::socket socket;
-    udp::endpoint remoteEndpoint;
+    asio::ip::udp::socket socket;
+    std::thread netThread;
+    std::thread physicsThread;
+    std::atomic<bool> running;
 
-    uint8_t recvBuffer[2048];
-    std::thread serverThread;
-    std::mutex clientsMutex;
-    std::unordered_map<uint32_t, RemoteClient> clients;
-    std::unordered_map<uint32_t, PlayerState> states;
-    uint32_t serverTickCount = 0;
+    std::unique_ptr<GameScene> scene;
+    std::unordered_map<uint32_t, std::unique_ptr<ServerPlayer>> players;
+    std::unordered_map<uint32_t, asio::ip::udp::endpoint> playerEndpoints;
 
-    bool running = false;
-    uint32_t nextClientId = 1;
-
-    // std::unique_ptr<btDefaultCollisionConfiguration> collisionConfiguration;
-    // std::unique_ptr<btCollisionDispatcher> dispatcher;
-    // std::unique_ptr<btBroadphaseInterface> overlappingPairCache;
-    // std::unique_ptr<btSequentialImpulseConstraintSolver> solver;
-    // std::unique_ptr<btDiscreteDynamicsWorld> dynamicsWorld;
-
-    // // Physics Helpers
-    // btGhostPairCallback ghostPairCallback;
-
-    const double tickRate = 1.0 / 60.0;
+    float fixedDelta = 1.f / 60.f;
+    uint32_t nextId = 1;
 };
