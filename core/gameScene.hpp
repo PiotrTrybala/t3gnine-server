@@ -22,8 +22,8 @@ public:
     uint32_t AddCollider(btCollisionObject *object);
     void RemoveCollider(uint32_t id);
 
-    void RegisterPlayer(std::shared_ptr<ServerPlayer> player);
-    void RemotePlayer(uint32_t id);
+    void AddPlayer(std::shared_ptr<ServerPlayer> player);
+    void RemovePlayer(uint32_t id);
 
     std::shared_ptr<ServerPlayer> GetPlayer(uint32_t id);
 
@@ -34,6 +34,7 @@ private:
     btSequentialImpulseConstraintSolver *solver;
     btDiscreteDynamicsWorld *world;
 
+    std::unordered_map<uint32_t, btCollisionObject*> colliders;
     std::unordered_map<uint32_t, btRigidBody *> rigidBodies;
     std::unordered_map<uint32_t, std::shared_ptr<ServerPlayer>> players;
 

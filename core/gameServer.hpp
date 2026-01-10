@@ -12,6 +12,8 @@
 #include "serverPlayer.hpp"
 #include "gameScene.hpp"
 
+using asio::ip::udp;
+
 class GameServer
 {
 public:
@@ -24,7 +26,7 @@ public:
 private:
     void handleReceive();
     void handlePhysics();
-    void boradcastSnapshots();
+    void broadcastSnapshots();
 
     void handlePacket(const tag::network::Packet &packet, const asio::ip::udp::endpoint &endpoint);
     void handleInputPacket(const tag::network::Packet &packet, uint32_t playerId);
