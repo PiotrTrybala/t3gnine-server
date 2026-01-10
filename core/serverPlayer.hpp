@@ -1,38 +1,28 @@
-// #pragma once
+#pragma once
 
-// #include <btBulletDynamicsCommon.h>
-// #include <BulletDynamics/Character/btKinematicCharacterController.h>
+#include <btBulletDynamicsCommon.h>
+#include <BulletDynamics/Character/btKinematicCharacterController.h>
 
-// struct ServerInput
-// {
-//     int direction;
-//     bool jumping;
-//     double timestamp;
-// };
+class ServerPlayer {
+    public:
+        ServerPlayer(uint32_t id);
+        ~ServerPlayer();
 
-// class ServerPlayer
-// {
-// public:
-//     ServerPlayer(uint32_t id, btPairCachingGhostObject *object, btKinematicCharacterController *controller);
-//     ~ServerPlayer();
+        const uint32_t GetID();
+        btKinematicCharacterController* GetController();
 
-//     uint32_t GetID() const;
-//     btKinematicCharacterController *GetController() const;
+        void ApplyInput(const PlayerInput& input);
+        void UpdatePhysics();
 
-//     void ApplyInput(const ServerInput &input);
+        btVector3 GetPosition();
+    private:
+        uint32_t id;
 
-//     void PostPhysicsUpdate(float deltaTime);
+        btPairCachingGhostObject* ghost;
+        btKinematicCharacterController* controller;
 
-//     btVector3 GetPosition() const;
+        btVector3 walkDirection;
+        bool jump = false;
 
-// private:
-//     uint32_t id;
-
-//     btPairCachingGhostObject* ghost;
-//     btKinematicCharacterController* controller;
-
-//     btVector3 pendingWalkDir;
-//     bool pendingJump = false;
-
-//     ServerInput lastInput;
-// };
+        PlayerInput lastInput;
+};
