@@ -28,6 +28,10 @@ public:
 private:
     void StartReceive();
     void HandleReceive(Packet& packet);
+    
+    void HandleInput(const Packet& packet);
+    void HandleJoin(const Packet& packet);
+    void HandleLeave(const Packet& packet);
 
     asio::io_context ioContext;
     asio::executor_work_guard<asio::io_context::executor_type> workGuard;

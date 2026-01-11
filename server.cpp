@@ -69,18 +69,42 @@ void GameServer::HandleReceive(Packet &packet)
         std::cout << "Got PING packet type" << std::endl;
         response.Write(PacketType::Ping);
         response.WriteString("Hello from server! :)");
-
         break;
-
-    case PacketType::PlayerJoin:
-    {
-        break;
-    }
-
     case PacketType::PlayerInput:
     {
-        break;
+        return;
+    }
+    case PacketType::PlayerJoin:
+    {
+        return;
+    }
+    case PacketType::PlayerLeave:
+    {
+        return;
     }
     }
     Send(response, remoteEndpoint);
+}
+
+void GameServer::HandleInput(const Packet &packet)
+{
+
+    // read input
+
+    // apply input to player
+
+}
+void GameServer::HandleJoin(const Packet &packet)
+{
+
+    // add new controller to scene
+
+    // broadcast new player to client
+
+}
+void GameServer::HandleLeave(const Packet &packet)
+{
+    // remove controller from scene
+
+    // broadcase player has left to clients
 }

@@ -18,6 +18,14 @@
 //     return glm::vec3(vec.getX(), vec.getY(), vec.getZ());
 // }
 
+#pragma once
+
+class Player
+{
+public:
+private:
+};
+
 // class Player
 // {
 // public:
