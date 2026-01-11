@@ -27,6 +27,9 @@ void GameServer::Run()
 
 void GameServer::Broadcast(const Packet &packet)
 {
+    for (auto& [id, endpoint] : endpoints) {
+        Send(packet, endpoint);
+    }
 }
 
 void GameServer::Send(const Packet &packet, const udp::endpoint &endpoint)

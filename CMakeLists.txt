@@ -14,7 +14,7 @@ include_directories(SYSTEM
     ${Boost_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME} main.cpp core/server.cpp)
+add_executable(${PROJECT_NAME} main.cpp server.cpp)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ../lib/tengine/include)
 

@@ -6,6 +6,8 @@
 
 #include <asio.hpp>
 
+#include "player.hpp"
+
 #include "packet.hpp"
 #include "types.hpp"
 
@@ -35,6 +37,7 @@ private:
 
     std::thread serverThread;
 
+    std::unordered_map<uint32_t, std::unique_ptr<Player>> players;
     std::unordered_map<uint32_t, udp::endpoint> endpoints;
 
     bool running = false;
