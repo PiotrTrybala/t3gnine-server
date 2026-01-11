@@ -3,26 +3,28 @@
 #include <btBulletDynamicsCommon.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 
-class ServerPlayer {
-    public:
-        ServerPlayer(uint32_t id);
-        ~ServerPlayer();
+class ServerPlayer
+{
+public:
+    ServerPlayer(uint32_t id);
+    ~ServerPlayer();
 
-        const uint32_t GetID();
-        btKinematicCharacterController* GetController();
+    const uint32_t GetID();
+    btKinematicCharacterController *GetController();
 
-        void ApplyInput(const PlayerInput& input);
-        void UpdatePhysics();
+    void ApplyInput(const PlayerInput &input);
+    void UpdatePhysics();
 
-        btVector3 GetPosition();
-    private:
-        uint32_t id;
+    btVector3 GetPosition();
 
-        btPairCachingGhostObject* ghost;
-        btKinematicCharacterController* controller;
+private:
+    uint32_t id;
 
-        btVector3 walkDirection;
-        bool jump = false;
+    btPairCachingGhostObject *ghost;
+    btKinematicCharacterController *controller;
 
-        PlayerInput lastInput;
+    btVector3 walkDirection;
+    bool jump = false;
+
+    PlayerInput lastInput;
 };
