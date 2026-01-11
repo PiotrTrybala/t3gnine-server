@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "core/gameServer.hpp"
+#include "core/server.hpp"
 
 int main()
 {

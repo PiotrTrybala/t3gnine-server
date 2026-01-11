@@ -1,4 +1,4 @@
-#include "gameServer.hpp"
+#include "server.hpp"
 
 GameServer::GameServer(uint16_t port) : workGuard(asio::make_work_guard(ioContext)), socket(ioContext, udp::endpoint(udp::v4(), port))
 {
@@ -31,13 +31,8 @@ void GameServer::Broadcast(const Packet &packet)
 
 void GameServer::Send(const Packet &packet, const udp::endpoint &endpoint)
 {
-    socket.async_send_to(asio::buffer(packet.data), endpoint, [this](const std::error_code& ec, std::size_t length) {
-        std::cout << "Send packet with length of " << length << " bytes" << std::endl;
-    });
-}
-
-void GameServer::SendClient(const Packet &packet, const Client &client)
-{
+    socket.async_send_to(asio::buffer(packet.data), endpoint, [this](const std::error_code &ec, std::size_t length)
+                         { std::cout << "Send packet with length of " << length << " bytes" << std::endl; });
 }
 
 void GameServer::StartReceive()
@@ -66,12 +61,11 @@ void GameServer::HandleReceive(Packet &packet)
 
     switch (packetType)
     {
-    case PacketType::PING:
+    case PacketType::Ping:
         std::cout << "Got PING packet type" << std::endl;
-        response.Write(PacketType::PING);
+        response.Write(PacketType::Ping);
         response.WriteString("Hello from server! :)");
 
-        
         break;
     }
     Send(response, remoteEndpoint);

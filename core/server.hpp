@@ -3,14 +3,13 @@
 #include <iostream>
 #include <cstdint>
 #include <map>
+
 #include <asio.hpp>
 
 #include "packet.hpp"
-#include "network.hpp"
-#include "client.hpp"
+#include "types.hpp"
 
 using asio::ip::udp;
-using namespace tag::lib::network;
 
 class GameServer
 {
@@ -23,7 +22,6 @@ public:
     void Broadcast(const Packet& packet);   
 
     void Send(const Packet& packet, const udp::endpoint& endpoint);
-    void SendClient(const Packet& packet, const Client& client);
 
 private:
     void StartReceive();
@@ -37,7 +35,7 @@ private:
 
     std::thread serverThread;
 
-    std::map<uint32_t, Client> clients;
+    std::unordered_map<uint32_t, udp::endpoint> endpoints;
 
     bool running = false;
     uint32_t nextId = 1;
