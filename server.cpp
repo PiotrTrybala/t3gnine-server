@@ -27,7 +27,8 @@ void GameServer::Run()
 
 void GameServer::Broadcast(const Packet &packet)
 {
-    for (auto& [id, endpoint] : endpoints) {
+    for (auto &[id, endpoint] : endpoints)
+    {
         Send(packet, endpoint);
     }
 }
@@ -70,6 +71,16 @@ void GameServer::HandleReceive(Packet &packet)
         response.WriteString("Hello from server! :)");
 
         break;
+
+    case PacketType::PlayerJoin:
+    {
+        break;
+    }
+
+    case PacketType::PlayerInput:
+    {
+        break;
+    }
     }
     Send(response, remoteEndpoint);
 }
