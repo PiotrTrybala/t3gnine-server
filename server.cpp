@@ -41,19 +41,21 @@ void GameServer::Send(const Packet &packet, const udp::endpoint &endpoint)
 
 void GameServer::StartReceive()
 {
+    udp::endpoint sender;
+
     socket.async_receive_from(
-        asio::buffer(recvBuffer), remoteEndpoint, [this](const asio::error_code &ec, std::size_t bytesReceived)
+        asio::buffer(recvBuffer), sender, [this, sender](const asio::error_code &ec, std::size_t bytesReceived)
         {
-            std::cout << "Got packet from: " << remoteEndpoint.address().to_string() << ":" << remoteEndpoint.port() << std::endl;
+            std::cout << "Got packet from: " << sender.address().to_string() << ":" << sender.port() << std::endl;
             if (!ec && bytesReceived > 0) {
                 Packet packet;
                 packet.data.assign(recvBuffer, recvBuffer + bytesReceived);
 
-                HandleReceive(packet);
+                HandleReceive(packet, sender);
             }
             StartReceive(); });
 }
-void GameServer::HandleReceive(Packet &packet)
+void GameServer::HandleReceive(Packet &packet, const udp::endpoint& endpoint)
 {
     PacketType packetType;
     if (!packet.Read(packetType))
@@ -66,45 +68,88 @@ void GameServer::HandleReceive(Packet &packet)
     switch (packetType)
     {
     case PacketType::Ping:
-        std::cout << "Got PING packet type" << std::endl;
         response.Write(PacketType::Ping);
         response.WriteString("Hello from server! :)");
         break;
     case PacketType::PlayerInput:
     {
+        HandleInput(packet);
         return;
     }
     case PacketType::PlayerJoin:
     {
+        HandleJoin(packet, endpoint);
         return;
     }
     case PacketType::PlayerLeave:
     {
+        HandleLeave(packet, endpoint);
         return;
     }
     }
     Send(response, remoteEndpoint);
 }
 
-void GameServer::HandleInput(const Packet &packet)
+void GameServer::HandleInput(Packet &packet)
 {
 
     // read input
 
-    // apply input to player
+    PlayerInput input;
 
+    if (!packet.Read(input.id))
+        return;
+    
+    if (!packet.Read(input.sequence))
+        return;
+
+    if (!packet.Read(input.front.x))
+        return;
+
+    if (!packet.Read(input.front.y))
+        return;
+
+    if (!packet.Read(input.front.z))
+        return;
+
+    if (!packet.Read(input.directionMask))
+        return;
+
+    if (!packet.Read(input.isJumping))
+        return;
+
+    players[input.id]->ApplyInput(input);
 }
-void GameServer::HandleJoin(const Packet &packet)
+void GameServer::HandleJoin(Packet &packet, const udp::endpoint& endpoint)
 {
 
     // add new controller to scene
 
-    // broadcast new player to client
+    uint32_t id = nextId++;
 
+    players[id] = std::make_unique<Player>(id);
+    endpoints[id] = endpoint;
+
+    Packet response;
+    response.Write(PacketType::PlayerJoined);
+    response.Write(id);
+
+    // broadcast new player to client
+    Send(response, endpoint);
 }
-void GameServer::HandleLeave(const Packet &packet)
+void GameServer::HandleLeave(Packet &packet, const udp::endpoint& endpoint)
 {
     // remove controller from scene
+    uint32_t id;
+    if (!packet.Read(id)) return;
 
-    // broadcase player has left to clients
+    players.erase(id);
+    endpoints.erase(id);
+
+    // broadcast player has left to clients
+    Packet response;
+    response.Write(PacketType::PlayerLeft);
+    response.Write(id);
+
+    Send(response, endpoint);
 }
