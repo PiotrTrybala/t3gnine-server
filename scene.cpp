@@ -39,4 +39,9 @@ void PhysicsScene::RemoveRigidBody(uint32_t id)
 
 void PhysicsScene::Update(float deltaTime)
 {
+    for (auto& [id, player] : players) {
+
+        
+
+    }
 }
