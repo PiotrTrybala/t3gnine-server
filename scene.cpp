@@ -1,62 +1,42 @@
-// #include "scene.hpp"
+#include "scene.hpp"
 
-// Scene::Scene()
-// {
-//     collisionConfiguration = new btDefaultCollisionConfiguration();
-//     dispatcher = new btCollisionDispatcher(collisionConfiguration);
-//     broadphase = new btDbvtBroadphase();
-//     solver = new btSequentialImpulseConstraintSolver();
-//     dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
+PhysicsScene::PhysicsScene()
+{
+}
+PhysicsScene::~PhysicsScene()
+{
+}
 
-//     dynamicsWorld->setGravity(btVector3(0, -9.81f, 0));
-// }
-// Scene::~Scene()
-// {
-//     for (auto &[id, body] : rigidBodies)
-//         dynamicsWorld->removeRigidBody(body);
+Collider *PhysicsScene::GetCollider(uint32_t id)
+{
+}
+uint32_t PhysicsScene::AddCollider(Collider *collider)
+{
+}
+void PhysicsScene::RemoveCollider(uint32_t id)
+{
+}
 
-//     rigidBodies.clear();
-//     colliders.clear();
-//     players.clear();
+Player *PhysicsScene::GetPlayer(uint32_t id)
+{
+}
+void PhysicsScene::AddPlayer(Player *player)
+{
+}
+void PhysicsScene::RemovePlayer(uint32_t id)
+{
+}
 
-//     delete dynamicsWorld;
-//     delete solver;
-//     delete broadphase;
-//     delete dispatcher;
-//     delete collisionConfiguration;
-// }
+RigidBody *PhysicsScene::GetRigidBody(uint32_t id)
+{
+}
+void PhysicsScene::AddRigidBody(RigidBody *rigidBody)
+{
+}
+void PhysicsScene::RemoveRigidBody(uint32_t id)
+{
+}
 
-// void Scene::AddCollider(const btVector3& position, const btVector3& scale)
-// {
-// }
-// void Scene::RemoveCollider(uint32_t id)
-// {
-// }
-
-// void Scene::AddRigidBody(btRigidBody *body)
-// {
-// }
-// void Scene::RemoveRigidBody(uint32_t id)
-// {
-// }
-
-// void Scene::AddPlayer(Player *player)
-// {
-//     players[player->GetID()] = player;
-// }
-// void Scene::RemovePlayer(uint32_t id)
-// {
-//     auto it = players.find(id);
-//     if (it == players.end()) return;
-
-//     players.erase(id);
-// }
-
-// void Scene::Update(float deltaTime)
-// {
-
-
-
-
-    
-// }
+void PhysicsScene::Update(float deltaTime)
+{
+}
