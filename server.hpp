@@ -3,6 +3,10 @@
 #include <iostream>
 #include <cstdint>
 #include <map>
+#include <memory>
+#include <thread>
+#include <unordered_map>
+#include <chrono>
 
 #include <asio.hpp>
 
@@ -28,15 +32,15 @@ class GameServer {
     private:
         void StartReceive();
         void HandleReceive(Packet& packet, const udp::endpoint& endpoint);
+        void Tick();
 
         std::thread serverThread;
         asio::io_context ioContext;
+        asio::steady_timer tickTimer;
         asio::executor_work_guard<asio::io_context::executor_type> workGuard;
         udp::socket socket;
         udp::endpoint remoteEndpoint;
         uint8_t receiveBuffer[2048];
-
-        std::thread physicsThread;
         std::unique_ptr<PhysicsScene> scene;
 
         std::unordered_map<uint32_t, udp::endpoint> endpoints;
