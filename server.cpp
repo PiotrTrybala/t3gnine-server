@@ -44,6 +44,21 @@ void GameServer::Send(const Packet &packet, const udp::endpoint &endpoint)
 
 void GameServer::Tick() {
     
+    if (!running) return;
+
+    scene->Update(TICK_RATE);
+
+    for (auto& [id, player] : players) {
+        Packet packet;
+        packet.Write(PacketType::Reconcile);
+        packet.Write(id);
+        packet.Write(player->GetPosition().x());
+        packet.Write(player->GetPosition().y());
+        packet.Write(player->GetPosition().z());
+        packet.Write(player->GetLastSequence());
+
+        Broadcast(packet);
+    }
 }
 
 void GameServer::StartReceive()

@@ -26,6 +26,7 @@ public:
     ~Player();
 
     const uint32_t GetID();
+    const uint32_t GetLastSequence();
     const btVector3& GetPosition();
     void SetPosition(const btVector3& position);
 
@@ -34,6 +35,7 @@ public:
 
 private:
     uint32_t id;
+    uint32_t lastSequence;
 
     btPairCachingGhostObject* ghostObject;
     btKinematicCharacterController* controller;
